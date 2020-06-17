@@ -7,6 +7,10 @@ const categories = require('../models/categories/categories-collection.js');
 
 const products = require('../models/products/products-collection.js');
 
+const bearerMiddleware = require('../lib/auth-server/bearer-auth.js');
+
+const permissions = require('../lib/auth-server/acl-middleware.js');
+
 function getModel(req, res, next) {
 
   let model = req.params.model;
@@ -27,11 +31,12 @@ function getModel(req, res, next) {
 }
 
 router.param('model', getModel);
-router.get('/:model', getAllFunction);
-router.get('/:model/:id', getOneFunction);
-router.post('/:model', postFunction);
-router.put('/:model/:id', putFunction);
-router.delete('/:model/:id', deleteFunction);
+
+router.get('/:model', bearerMiddleware, permissions('read'), getAllFunction);
+router.get('/:model/:id', bearerMiddleware, permissions('read'), getOneFunction);
+router.post('/:model', bearerMiddleware, permissions('create'), postFunction);
+router.put('/:model/:id', bearerMiddleware, permissions('update'), putFunction);
+router.delete('/:model/:id', bearerMiddleware, permissions('delete'), deleteFunction);
 
 function getAllFunction(req, res, next) {
   req.model.get()
